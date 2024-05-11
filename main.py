@@ -4,19 +4,28 @@ from typing import List
 from pygame.math import Vector2
 from pygame.locals import *
 from misc.config import *
-from misc.images import barImg
+from misc.images import bottomBarImg
 from classes.Map import Map
 from classes.Agent import Agent
-from classes.Table import Tree
-from classes.Meal import spaghetti, pizza, burger, menu
-from misc.dictionary import names, surnames
+from classes.mapObjects.Rock import Rock
+from classes.mapObjects.IronOre import IronOre
+from classes.mapObjects.Lily import Lily
+from classes.mapObjects.Tree import Tree
+from classes.mapObjects.Water import Water
+
+def displayBar():
+    DISPLAY.blit(
+        bottomBarImg,
+        (0, HEIGHT*TILE_SIZE))
+
 
 def tick():
     CLOCK.tick(FRAMERATE)
     world_map.render(DISPLAY)
-    for tree in trees:
-        tree.render(DISPLAY)
+    for object in objects:
+        object.render(DISPLAY)
     agent.render(DISPLAY)
+    displayBar()
     pygame.display.flip()
     pygame.display.update()
     
@@ -26,13 +35,19 @@ if __name__ == '__main__':
     font = pygame.font.SysFont(None, 25)
     world_map = Map(WIDTH, HEIGHT, TILE_SIZE)
     agent = Agent(TILE_SIZE,world_map)
-    world_map.set_map()
     trees = [Tree(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.tree_cells]
+    rocks = [Rock(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.rock_cells]
+    waters = [Water(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.water_cells]
+    lilies = [Lily(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.lily_cells]
+    ironOres = [IronOre(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.ironOre_cells]
+    objects = trees + rocks + waters + lilies + ironOres
+    lilies = []
     is_running = True
     paused = False
     ticks = 0
 
     while is_running:
+        if paused: continue
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_running = False
@@ -48,9 +63,6 @@ if __name__ == '__main__':
                         agent.move('A',world_map)
                     elif event.key == pygame.K_d:
                         agent.move('D',world_map)
-
-
-        if paused: continue
        
         tick()
         ticks += 1
