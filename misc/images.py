@@ -15,6 +15,7 @@ rock_cell = pygame.transform.scale( pygame.image.load("images/rock.png"),  (size
 grass_cell = pygame.transform.scale(pygame.image.load("images/grass.png"),  (size, size))
 ironOre_cell = pygame.transform.scale(pygame.image.load("images/ironOre.png"),  (size, size))
 lily_cell = pygame.transform.scale(pygame.image.load("images/lily.png"),  (size, size))
+rockFloor_cell = pygame.transform.scale(pygame.image.load("images/rockFloor.png"),  (size, size))
 
 barImg = pygame.transform.scale(pygame.image.load("images/bar.png"), (size * BAR, size * HEIGHT))
 bottomBarImg = pygame.transform.scale(pygame.image.load("images/bottomBar.png"),(size * WIDTH, size * BOTTOMBAR))

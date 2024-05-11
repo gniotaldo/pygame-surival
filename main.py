@@ -17,6 +17,21 @@ def displayBar():
     DISPLAY.blit(
         bottomBarImg,
         (0, HEIGHT*TILE_SIZE))
+    inventory_counts = {}
+
+    # Zliczenie elementów w ekwipunku agenta
+    for item in agent.inventory:
+        inventory_counts[item] = inventory_counts.get(item, 0) + 1
+
+    # Pozycja startowa dla wypisywania na pasku
+    x_pos = 10
+    y_pos = HEIGHT * TILE_SIZE + 10
+
+    # Wypisanie elementów na pasku
+    for item, count in inventory_counts.items():
+        text = font.render(f"{item}: {count}", True, (255, 255, 255))
+        DISPLAY.blit(text, (x_pos, y_pos))
+        x_pos += text.get_width() + 10  
 
 
 def tick():
@@ -63,6 +78,10 @@ if __name__ == '__main__':
                         agent.move('A',world_map)
                     elif event.key == pygame.K_d:
                         agent.move('D',world_map)
+                    elif event.key == pygame.K_q:
+                        if world_map.map_grid[int(agent.facing.x)][int(agent.facing.y)] == Map.Cell.LilyCell:
+                            objects.append(Water(agent.facing,TILE_SIZE,WIDTH,HEIGHT))
+                        agent.destroy(objects)
        
         tick()
         ticks += 1

@@ -4,7 +4,7 @@ from enum import Enum
 import pygame
 from typing import List
 from pygame.math import Vector2
-from misc.images import grass_cell
+from misc.images import grass_cell, rockFloor_cell
 from misc.config import BAR, CHUNK_SIZE
 
 
@@ -79,18 +79,41 @@ class Chunk:
 
 class Map:
     class Cell(Enum):
+
         GrassCell = "Grass"
-        TreeCell = "Tree"
+        RockFloorCell = "RockFloor"
         WaterCell = "Lake"
+
+        TreeCell = "Tree"
         RockCell = "Rock"
         LilyCell = "Lily"
         IronOreCell = "IronOre"
     
         def is_enterable(self):
-            enterable_cells = [self.GrassCell, self.LilyCell]
+            enterable_cells = [self.GrassCell, self.LilyCell, self.RockFloorCell]
             return self in enterable_cells
-
-
+    
+        def is_destroyable(self):
+            destroyable_cells = [self.TreeCell, self.RockCell, self.LilyCell, self.IronOreCell]
+            return self in destroyable_cells
+        def floor(self):
+            match self:
+                case self.TreeCell:
+                    return self.GrassCell
+                case self.LilyCell:
+                    return self.WaterCell
+                case self.RockCell:
+                    return self.RockFloorCell
+                case self.IronOreCell:
+                    return self.RockFloorCell
+                case _:
+                    return self.GrassCell
+                    
+    def imageForCell(self, cell: Cell):
+        if cell == self.Cell.RockFloorCell:
+            return rockFloor_cell
+        else:
+            return grass_cell
     def __init__(self, width, height, tile_size):
         self.map_grid: List[List[self.Cell]] = None
         self._width = width
@@ -147,6 +170,6 @@ class Map:
         for y in range(self._height):
             for x in range(self._width):
                 display.blit(
-                    grass_cell,
+                    self.imageForCell(self.map_grid[x][y]),
                     (x * self._tile_size, y * self._tile_size)
                 )
