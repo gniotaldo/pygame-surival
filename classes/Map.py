@@ -189,8 +189,8 @@ class Map:
         self.chunks.append(gory)
 
     def render(self, display, left, top):
-        for y in range(top, top + HEIGHT):
-            for x in range(left, left + WIDTH):
+        for y in range(int(top)-2, int(top) + HEIGHT+2):
+            for x in range(int(left)-2, int(left) + WIDTH+2):
                 display.blit(
                     self.imageForCell(self.map_grid[x][y]),
                     ((x - left) * self._tile_size, (y - top) * self._tile_size)

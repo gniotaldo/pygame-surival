@@ -13,33 +13,34 @@ from classes.mapObjects.Lily import Lily
 from classes.mapObjects.Tree import Tree
 from classes.mapObjects.Water import Water
 
-
 def displayBar():
     DISPLAY.blit(
         bottomBarImg,
         (0, HEIGHT*TILE_SIZE))
     inventory_counts = {}
 
-    # Zliczenie elementów w ekwipunku agenta
     for item in agent.inventory:
         inventory_counts[item] = inventory_counts.get(item, 0) + 1
 
-    # Pozycja startowa dla wypisywania na pasku
     x_pos = 10
-    y_pos = HEIGHT * TILE_SIZE + 10
+    y_pos = (HEIGHT+BOTTOMBAR/2) * TILE_SIZE - 5
 
-    # Wypisanie elementów na pasku
     for item, count in inventory_counts.items():
         text = font.render(f"{item}: {count}", True, (255, 255, 255))
         DISPLAY.blit(text, (x_pos, y_pos))
         x_pos += text.get_width() + 10  
+
+    texthelper = font.render("COORDS: 444.44, 444.44", True, (255, 255, 255))
+    maxwidth = texthelper.get_width()
+    textCords = font.render(f"COORDS: {agent.position.x}, {agent.position.y}", True, (255, 255, 255))
+    DISPLAY.blit(textCords, (WIDTH * TILE_SIZE - maxwidth - 10, y_pos))
 
 
 def tick():
     CLOCK.tick(FRAMERATE)
     world_map.render(DISPLAY, renderLeft, renderTop)
     for object in objects:
-        if renderLeft <= object.position.x < renderLeft + WIDTH and renderTop <= object.position.y < renderTop + HEIGHT:
+        if renderLeft-2 <= object.position.x < renderLeft +2 +WIDTH and renderTop-2 <= object.position.y < renderTop +2 + HEIGHT:
             object.render(DISPLAY, renderLeft, renderTop)
     agent.render(DISPLAY, renderLeft, renderTop)
     displayBar()
@@ -47,8 +48,8 @@ def tick():
     pygame.display.update()
 
 def updateCamera():
-    rendLeft = int(agent.position.x - WIDTH/2)
-    rendTop = int(agent.position.y - HEIGHT/2)
+    rendLeft = agent.position.x - WIDTH/2
+    rendTop = agent.position.y - HEIGHT/2
     if rendTop < 0:
         rendTop = 0
     if rendTop > 9 * HEIGHT:
@@ -86,6 +87,7 @@ if __name__ == '__main__':
                 if event.key == pygame.K_SPACE:
                     paused = not paused
                 elif not paused:
+                    '''
                     if event.key == pygame.K_w:
                         agent.move('W',world_map)
                     elif event.key == pygame.K_s:
@@ -95,10 +97,21 @@ if __name__ == '__main__':
                         print(f"rendery: {renderLeft, renderTop}")
                     elif event.key == pygame.K_d:
                         agent.move('D',world_map)
-                    elif event.key == pygame.K_q:
+                    '''
+                    if event.key == pygame.K_q:
                         if world_map.map_grid[int(agent.facing.x)][int(agent.facing.y)] == Map.Cell.LilyCell:
                             objects.append(Water(agent.facing,TILE_SIZE,WIDTH,HEIGHT))
                         agent.destroy(objects)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            agent.move('W', world_map)
+        if keys[pygame.K_s]:
+            agent.move('S', world_map)
+        if keys[pygame.K_a]:
+            agent.move('A', world_map)
+        if keys[pygame.K_d]:
+            agent.move('D', world_map)
+
 
         if paused: 
             continue

@@ -1,6 +1,7 @@
 from pygame.math import Vector2
 import pygame
 from typing import List
+from math import ceil,floor
 from classes.Map import Map
 from misc.config import HEIGHT,WIDTH,BAR
 from misc.images import waiterImgs as dirImgs
@@ -52,14 +53,51 @@ class Agent:
                     pass
 
     def destroy(self,objects: list[any]):
-        facingCell: Map.Cell = self.map.map_grid[int(self.facing.x)][int(self.facing.y)]
+        #ff
+        facingCell: Map.Cell = self.map.map_grid[floor(self.facing.x)][floor(self.facing.y)]
+        found = False
         if facingCell.is_destroyable():
             for object in objects:
-                if object.position == self.facing:
+                if int(object.position.x) == int(floor(self.facing.x)) and int(object.position.y) == int(floor(self.facing.y)):
                     objects.remove(object)
+                    found = True
                     break
-            self.map.map_grid[int(self.facing.x)][int(self.facing.y)] = facingCell.floor()
+            self.map.map_grid[floor(self.facing.x)][floor(self.facing.y)] = facingCell.floor()
             self.addToInventory(facingCell)
+        #cc
+        if not found:
+            facingCell: Map.Cell = self.map.map_grid[ceil(self.facing.x)][ceil(self.facing.y)]
+            if facingCell.is_destroyable():
+                for object in objects:
+                    if int(object.position.x) == int(ceil(self.facing.x)) and int(object.position.y) == int(ceil(self.facing.y)):
+                        objects.remove(object)
+                        found = True
+                        break
+                self.map.map_grid[ceil(self.facing.x)][ceil(self.facing.y)] = facingCell.floor()
+                self.addToInventory(facingCell)
+        #fc
+        if not found:
+            facingCell: Map.Cell = self.map.map_grid[floor(self.facing.x)][ceil(self.facing.y)]
+            if facingCell.is_destroyable():
+                for object in objects:
+                    if int(object.position.x) == int(floor(self.facing.x)) and int(object.position.y) == int(ceil(self.facing.y)):
+                        objects.remove(object)
+                        found = True
+                        break
+                self.map.map_grid[floor(self.facing.x)][ceil(self.facing.y)] = facingCell.floor()
+                self.addToInventory(facingCell)
+        #cf
+        if not found:
+            facingCell: Map.Cell = self.map.map_grid[ceil(self.facing.x)][floor(self.facing.y)]
+            if facingCell.is_destroyable():
+                for object in objects:
+                    if int(object.position.x) == int(ceil(self.facing.x)) and int(object.position.y) == int(floor(self.facing.y)):
+                        objects.remove(object)
+                        found = True
+                        break
+                self.map.map_grid[ceil(self.facing.x)][floor(self.facing.y)] = facingCell.floor()
+                self.addToInventory(facingCell)
+
 
     def place(self, item):
         if item > 0:
@@ -68,33 +106,27 @@ class Agent:
 
     
     def move(self,moveType, map: Map):
-        
-        if moveType=='W':
+        if moveType == 'W':
             self._waiter_image = dirImgs[2]
-            if (self.position.y>0 and map.map_grid[int(self.position.x)][int(self.position.y-1)].is_enterable()):
-                self.position.y -= 1
-            self.facing = Vector2(self.position.x,self.position.y-1)
-            if self.position.y == 0:
-                self.facing = Vector2(self.position.x,self.position.y)
-        elif moveType=='S':
+            next_y = self.position.y - 0.2
+            if next_y >= 0 and map.map_grid[ceil(self.position.x)][floor(next_y)].is_enterable() and map.map_grid[floor(self.position.x)][floor(next_y)].is_enterable():
+                self.position.y = round(next_y, 1)  # Zaokrąglanie do jednego miejsca po przecinku
+            self.facing = Vector2(self.position.x, self.position.y - 1)
+        elif moveType == 'S':
             self._waiter_image = dirImgs[0]
-            if (self.position.y<self.map._height-1 and map.map_grid[int(self.position.x)][int(self.position.y+1)].is_enterable()):
-                self.position.y += 1
-            self.facing = Vector2(self.position.x,self.position.y+1)
-            if self.position.y == self.map._height-1:
-                self.facing = Vector2(self.position.x,self.position.y)
-        elif moveType=='A':
+            next_y = self.position.y + 0.2
+            if next_y < self.map._height and map.map_grid[ceil(self.position.x)][ceil(next_y)].is_enterable() and map.map_grid[floor(self.position.x)][ceil(next_y)].is_enterable():
+                self.position.y = round(next_y, 1)
+            self.facing = Vector2(self.position.x, self.position.y + 1)
+        elif moveType == 'A':
             self._waiter_image = dirImgs[1]
-            if (self.position.x>BAR and map.map_grid[int(self.position.x-1)][int(self.position.y)].is_enterable()):
-                self.position.x -= 1
-            self.facing = Vector2(self.position.x-1,self.position.y)
-            if self.position.x == 0:
-                self.facing = Vector2(self.position.x,self.position.y)
-        elif moveType=='D':
+            next_x = self.position.x - 0.2
+            if next_x >= BAR and map.map_grid[floor(next_x)][ceil(self.position.y)].is_enterable() and map.map_grid[floor(next_x)][floor(self.position.y)].is_enterable():
+                self.position.x = round(next_x, 1)
+            self.facing = Vector2(self.position.x - 1, self.position.y)
+        elif moveType == 'D':
             self._waiter_image = dirImgs[3]
-            if (self.position.x<self.map._width-1 and map.map_grid[int(self.position.x+1)][int(self.position.y)].is_enterable()):
-                self.position.x += 1
-            self.facing = Vector2(self.position.x+1,self.position.y)
-            if self.position.x == self.map._width-1:
-                self.facing = Vector2(self.position.x,self.position.y)
-    
+            next_x = self.position.x + 0.2
+            if next_x < self.map._width and map.map_grid[ceil(next_x)][ceil(self.position.y)].is_enterable() and map.map_grid[ceil(next_x)][floor(self.position.y)].is_enterable():
+                self.position.x = round(next_x, 1)
+            self.facing = Vector2(self.position.x + 1, self.position.y)
