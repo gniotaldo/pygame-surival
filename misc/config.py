@@ -10,7 +10,7 @@ RIGHTBAR = 0
 BOTTOMBAR = 2
 CHUNK_SIZE = 5
 SEALEVEL = 0 # (-5,5)
-
+RANDOMSEED = True
 
 DISPLAY = pygame.display.set_mode(((WIDTH+RIGHTBAR) * TILE_SIZE, (HEIGHT+BOTTOMBAR) * TILE_SIZE))
 CLOCK = pygame.time.Clock()

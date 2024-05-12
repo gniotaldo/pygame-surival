@@ -5,7 +5,7 @@ import pygame
 from typing import List
 from pygame.math import Vector2
 from misc.images import grass_cell, rockFloor_cell
-from misc.config import BAR, CHUNK_SIZE, SEALEVEL, HEIGHT, WIDTH
+from misc.config import BAR, CHUNK_SIZE, SEALEVEL, HEIGHT, WIDTH, RANDOMSEED
 
 import noise
 import numpy as np
@@ -149,8 +149,10 @@ class Map:
         else:
             return grass_cell
     def __init__(self, width, height, tile_size):
-        #seed = random.randint(0,70)
-        seed = 20
+        if RANDOMSEED:
+            seed = random.randint(0,70)
+        else:
+            seed = 20
         map_gen = MapGenerator(width, height, 100.0, 6, 0.5, 2.0, seed)
         self.world_map = map_gen.generate_map()
         self.map_grid: List[List[self.Cell]] = None

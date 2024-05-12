@@ -24,8 +24,8 @@ class Agent:
 
     def getInitPosition(self):
         print(self.map._height, self.map._width)
-        for x in range (0,self.map._width):
-            for y in range (0,self.map._height):
+        for x in range (int(self.map._width/3),self.map._width):
+            for y in range (int(self.map._height/3),self.map._height):
                 if self.map.map_grid[x][y] == Map.Cell.GrassCell:
                     return Vector2(x,y)
         return Vector2(0,0)
