@@ -5,7 +5,7 @@ import pygame
 from typing import List
 from pygame.math import Vector2
 from misc.images import grass_cell, rockFloor_cell
-from misc.config import BAR, CHUNK_SIZE, SEALEVEL
+from misc.config import BAR, CHUNK_SIZE, SEALEVEL, HEIGHT, WIDTH
 
 import noise
 import numpy as np
@@ -186,10 +186,10 @@ class Map:
         gory = Chunk(Chunk.ChunkTypes.Mountains,self.mountainsPos,self._tile_size,self)
         self.chunks.append(gory)
 
-    def render(self, display):
-        for y in range(self._height):
-            for x in range(self._width):
+    def render(self, display, left, top):
+        for y in range(top, top + HEIGHT):
+            for x in range(left, left + WIDTH):
                 display.blit(
                     self.imageForCell(self.map_grid[x][y]),
-                    (x * self._tile_size, y * self._tile_size)
+                    ((x - left) * self._tile_size, (y - top) * self._tile_size)
                 )

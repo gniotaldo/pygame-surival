@@ -10,8 +10,8 @@ class Rock:
         self.map_width = map_width
         self.map_height = map_height
 
-    def render(self, display):
+    def render(self, display, left, top):
         display.blit(
             self._table_image,
-            (self.position.x * self._size, self.position.y * self._size)
+            ((self.position.x-left) * self._size, (self.position.y-top) * self._size)
         )

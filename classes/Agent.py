@@ -31,10 +31,10 @@ class Agent:
         return Vector2(0,0)
 
 
-    def render(self, display):
+    def render(self, display, left, top):
         display.blit(
             self._waiter_image,
-            (self.position.x * self._size, self.position.y * self._size)
+            ((self.position.x - left) * self._size, (self.position.y - top) * self._size)
         )
 
     def addToInventory(self, item: Map.Cell):
@@ -78,10 +78,10 @@ class Agent:
                 self.facing = Vector2(self.position.x,self.position.y)
         elif moveType=='S':
             self._waiter_image = dirImgs[0]
-            if (self.position.y<HEIGHT-1 and map.map_grid[int(self.position.x)][int(self.position.y+1)].is_enterable()):
+            if (self.position.y<self.map._height-1 and map.map_grid[int(self.position.x)][int(self.position.y+1)].is_enterable()):
                 self.position.y += 1
             self.facing = Vector2(self.position.x,self.position.y+1)
-            if self.position.y == HEIGHT-1:
+            if self.position.y == self.map._height-1:
                 self.facing = Vector2(self.position.x,self.position.y)
         elif moveType=='A':
             self._waiter_image = dirImgs[1]
@@ -92,10 +92,9 @@ class Agent:
                 self.facing = Vector2(self.position.x,self.position.y)
         elif moveType=='D':
             self._waiter_image = dirImgs[3]
-            if (self.position.x<WIDTH-1 and map.map_grid[int(self.position.x+1)][int(self.position.y)].is_enterable()):
+            if (self.position.x<self.map._width-1 and map.map_grid[int(self.position.x+1)][int(self.position.y)].is_enterable()):
                 self.position.x += 1
             self.facing = Vector2(self.position.x+1,self.position.y)
-            if self.position.x == WIDTH-1:
+            if self.position.x == self.map._width-1:
                 self.facing = Vector2(self.position.x,self.position.y)
-        
     

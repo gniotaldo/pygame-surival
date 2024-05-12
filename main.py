@@ -37,20 +37,34 @@ def displayBar():
 
 def tick():
     CLOCK.tick(FRAMERATE)
-    world_map.render(DISPLAY)
+    world_map.render(DISPLAY, renderLeft, renderTop)
     for object in objects:
-        object.render(DISPLAY)
-    agent.render(DISPLAY)
+        if renderLeft <= object.position.x < renderLeft + WIDTH and renderTop <= object.position.y < renderTop + HEIGHT:
+            object.render(DISPLAY, renderLeft, renderTop)
+    agent.render(DISPLAY, renderLeft, renderTop)
     displayBar()
     pygame.display.flip()
     pygame.display.update()
+
+def updateCamera():
+    rendLeft = int(agent.position.x - WIDTH/2)
+    rendTop = int(agent.position.y - HEIGHT/2)
+    if rendTop < 0:
+        rendTop = 0
+    if rendTop > 9 * HEIGHT:
+        rendTop = 9 * HEIGHT
+    if rendLeft < 0:
+        rendLeft = 0
+    if rendLeft > 9 * WIDTH:
+        rendLeft= 9 * WIDTH
+    return rendLeft, rendTop
 
     
 
 if __name__ == '__main__': 
     pygame.init()
     font = pygame.font.SysFont(None, 25)
-    world_map = Map(WIDTH, HEIGHT, TILE_SIZE)
+    world_map = Map(WIDTH*MAP_SIZE, HEIGHT*MAP_SIZE, TILE_SIZE)
     trees = [Tree(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.tree_cells]
     rocks = [Rock(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.rock_cells]
     waters = [Water(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.water_cells]
@@ -64,7 +78,7 @@ if __name__ == '__main__':
     print(world_map.map_grid[0][0])
 
     while is_running:
-        
+        renderLeft, renderTop = updateCamera()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_running = False
@@ -74,20 +88,13 @@ if __name__ == '__main__':
                 elif not paused:
                     if event.key == pygame.K_w:
                         agent.move('W',world_map)
-                        rendLeft = agent.position.x - 15
-                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_s:
                         agent.move('S',world_map)
-                        rendLeft = agent.position.x - 15
-                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_a:
                         agent.move('A',world_map)
-                        rendLeft = agent.position.x - 15
-                        rendTop = agent.position.y - 10
+                        print(f"rendery: {renderLeft, renderTop}")
                     elif event.key == pygame.K_d:
                         agent.move('D',world_map)
-                        rendLeft = agent.position.x - 15
-                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_q:
                         if world_map.map_grid[int(agent.facing.x)][int(agent.facing.y)] == Map.Cell.LilyCell:
                             objects.append(Water(agent.facing,TILE_SIZE,WIDTH,HEIGHT))
