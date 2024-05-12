@@ -99,9 +99,9 @@ if __name__ == '__main__':
                         agent.move('D',world_map)
                     '''
                     if event.key == pygame.K_q:
-                        if world_map.map_grid[int(agent.facing.x)][int(agent.facing.y)] == Map.Cell.LilyCell:
-                            objects.append(Water(agent.facing,TILE_SIZE,WIDTH,HEIGHT))
-                        agent.destroy(objects)
+                        deleted, position = agent.destroy(objects)
+                        if deleted == Map.Cell.LilyCell:
+                            objects.append(Water(position,TILE_SIZE,WIDTH,HEIGHT))
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             agent.move('W', world_map)

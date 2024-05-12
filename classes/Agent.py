@@ -62,8 +62,10 @@ class Agent:
                     objects.remove(object)
                     found = True
                     break
+            deleted = self.map.map_grid[floor(self.facing.x)][floor(self.facing.y)]
             self.map.map_grid[floor(self.facing.x)][floor(self.facing.y)] = facingCell.floor()
             self.addToInventory(facingCell)
+            return deleted, Vector2(floor(self.facing.x),floor(self.facing.y))
         #cc
         if not found:
             facingCell: Map.Cell = self.map.map_grid[ceil(self.facing.x)][ceil(self.facing.y)]
@@ -73,8 +75,10 @@ class Agent:
                         objects.remove(object)
                         found = True
                         break
+                deleted = self.map.map_grid[ceil(self.facing.x)][ceil(self.facing.y)]
                 self.map.map_grid[ceil(self.facing.x)][ceil(self.facing.y)] = facingCell.floor()
                 self.addToInventory(facingCell)
+                return deleted, Vector2(ceil(self.facing.x),ceil(self.facing.y))
         #fc
         if not found:
             facingCell: Map.Cell = self.map.map_grid[floor(self.facing.x)][ceil(self.facing.y)]
@@ -84,8 +88,10 @@ class Agent:
                         objects.remove(object)
                         found = True
                         break
+                deleted = self.map.map_grid[floor(self.facing.x)][ceil(self.facing.y)]
                 self.map.map_grid[floor(self.facing.x)][ceil(self.facing.y)] = facingCell.floor()
                 self.addToInventory(facingCell)
+                return deleted, Vector2(floor(self.facing.x),ceil(self.facing.y))
         #cf
         if not found:
             facingCell: Map.Cell = self.map.map_grid[ceil(self.facing.x)][floor(self.facing.y)]
@@ -95,8 +101,11 @@ class Agent:
                         objects.remove(object)
                         found = True
                         break
+                deleted = self.map.map_grid[ceil(self.facing.x)][floor(self.facing.y)]
                 self.map.map_grid[ceil(self.facing.x)][floor(self.facing.y)] = facingCell.floor()
                 self.addToInventory(facingCell)
+                return deleted, Vector2(ceil(self.facing.x),floor(self.facing.y))
+        return None, Vector2(0,0)
 
 
     def place(self, item):
