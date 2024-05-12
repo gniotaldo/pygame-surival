@@ -5,7 +5,42 @@ import pygame
 from typing import List
 from pygame.math import Vector2
 from misc.images import grass_cell, rockFloor_cell
-from misc.config import BAR, CHUNK_SIZE
+from misc.config import BAR, CHUNK_SIZE, SEALEVEL
+
+import noise
+import numpy as np
+
+class MapGenerator:
+    def __init__(self, width, height, scale, octaves, persistence, lacunarity, seed=None):
+        self.width = width
+        self.height = height
+        self.scale = scale
+        self.octaves = octaves
+        self.persistence = persistence
+        self.lacunarity = lacunarity
+        self.seed = seed
+    
+    def generate_map(self):
+        if self.seed is not None:
+            np.random.seed(self.seed)
+            seed = np.random.randint(0, 100)
+        else:
+            seed = None
+
+        world_map = np.zeros((self.width, self.height))
+
+        for x in range(self.width):
+            for y in range(self.height):
+                world_map[x][y] = noise.pnoise2(x / self.scale, 
+                                                y / self.scale, 
+                                                octaves=self.octaves, 
+                                                persistence=self.persistence, 
+                                                lacunarity=self.lacunarity, 
+                                                repeatx=self.width, 
+                                                repeaty=self.height, 
+                                                base=seed)
+
+        return world_map
 
 
 class Chunk:
@@ -15,11 +50,12 @@ class Chunk:
         Lake = 'L'
         Mountains = 'M'
 
-    def __init__(self, type, topleftX, topleftY, tile_size, world_map: 'Map'):
-        self.positions = [] 
+    def __init__(self, type, positions, tile_size, world_map: 'Map'):
+        self.positions = positions 
         self.type = type
         self.map = world_map
         self.objects = []
+        '''
         for x in range (topleftX, topleftX + CHUNK_SIZE):
             if x >= 0 and x < world_map._width:
                 for y in range (topleftY, topleftY + CHUNK_SIZE):
@@ -29,6 +65,7 @@ class Chunk:
                         break
             else:
                 break
+        '''
         self._tile_size = tile_size
         self.set_chunk()
 
@@ -43,7 +80,6 @@ class Chunk:
                 self.generateMountains()
 
     def generateForrest(self):
-        print("robie las")
         for x, y in self.positions:
             randomizer = random.randint(0,10)
             if randomizer in range (0,8):
@@ -53,7 +89,6 @@ class Chunk:
                 self.map.tree_cells.append((x,y))
 
     def generateLake(self):
-        print("robie jezioro")
         for x, y in self.positions:
             randomizer = random.randint(0,10)
             if randomizer == 0:
@@ -64,7 +99,6 @@ class Chunk:
                 self.map.water_cells.append((x,y))
 
     def generateMountains(self):
-        print("robie gory")
         for x, y in self.positions:
             randomizer = random.randint(0,10)
             if randomizer == 0:
@@ -115,6 +149,10 @@ class Map:
         else:
             return grass_cell
     def __init__(self, width, height, tile_size):
+        #seed = random.randint(0,70)
+        seed = 20
+        map_gen = MapGenerator(width, height, 100.0, 6, 0.5, 2.0, seed)
+        self.world_map = map_gen.generate_map()
         self.map_grid: List[List[self.Cell]] = None
         self._width = width
         self._height = height
@@ -125,46 +163,28 @@ class Map:
         self.ironOre_cells = []
         self.water_cells = []
         self.rock_cells = []
+        self.forrestPos = []
+        self.mountainsPos = []
+        self.lakePos = []
+        self.world_map[0][0] = self.world_map[0][1]
+        for x in range (0,self._width):
+            for y in range (0,self._height):
+                if self.world_map[x][y] > 0.15 - SEALEVEL/20:
+                    self.mountainsPos.append((x,y))
+                elif self.world_map[x][y] < 0 - SEALEVEL/20:
+                    self.lakePos.append((x,y))
+                elif self.world_map[x][y] > 0.05 - SEALEVEL/20:
+                    self.forrestPos.append((x,y))
         self.set_map()
 
     def set_map(self):
         self.map_grid = [[self.Cell.GrassCell for _ in range(self._height)] for _ in range(self._width)]
-        #self.set_trees()
-        self.set_chunks()
-
-    def set_chunks(self):
-        chunkId = 0
-        for x in range (self._width):
-            if x % CHUNK_SIZE == 0:
-                for y in range (self._height):
-                    if y % CHUNK_SIZE == 0:
-                        randomTypeId = random.randint(0,2)
-                        match randomTypeId:
-                            case 0:
-                                chunk_type = Chunk.ChunkTypes.Forrest
-                            case 1:
-                                chunk_type = Chunk.ChunkTypes.Lake
-                            case 2:
-                                chunk_type = Chunk.ChunkTypes.Mountains
-                        chunk = Chunk(chunk_type,x,y,self._tile_size,self)
-                        self.chunks.append(chunk)
-                        chunkId += 1
-
-    def set_trees(self):
-        attempt = 0
-        while attempt < 30:
-            random_x = random.randint(BAR, self._width - 1)
-            random_y = random.randint(BAR, self._height - 1)
-            if self.map_grid[random_x][random_y] != self.Cell.TreeCell and not any(
-                    math.sqrt((random_x - tx) ** 2 + (random_y - ty) ** 2) <= 4 for tx, ty in self.tree_cells
-            ):
-                self.tree_cells.append((random_x, random_y))
-
-            else:
-                attempt += 1
-        for x, y in self.tree_cells:
-            self.map_grid[x][y] = self.Cell.TreeCell
-
+        las = Chunk(Chunk.ChunkTypes.Forrest,self.forrestPos,self._tile_size,self)
+        self.chunks.append(las)
+        jezioro = Chunk(Chunk.ChunkTypes.Lake,self.lakePos,self._tile_size,self)
+        self.chunks.append(jezioro)
+        gory = Chunk(Chunk.ChunkTypes.Mountains,self.mountainsPos,self._tile_size,self)
+        self.chunks.append(gory)
 
     def render(self, display):
         for y in range(self._height):

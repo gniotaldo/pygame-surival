@@ -23,8 +23,9 @@ class Agent:
         
 
     def getInitPosition(self):
-        for x in range (self.map._width):
-            for y in range (self.map._height):
+        print(self.map._height, self.map._width)
+        for x in range (0,self.map._width):
+            for y in range (0,self.map._height):
                 if self.map.map_grid[x][y] == Map.Cell.GrassCell:
                     return Vector2(x,y)
         return Vector2(0,0)
@@ -59,6 +60,11 @@ class Agent:
                     break
             self.map.map_grid[int(self.facing.x)][int(self.facing.y)] = facingCell.floor()
             self.addToInventory(facingCell)
+
+    def place(self, item):
+        if item > 0:
+            ...
+
 
     
     def move(self,moveType, map: Map):

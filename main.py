@@ -13,6 +13,7 @@ from classes.mapObjects.Lily import Lily
 from classes.mapObjects.Tree import Tree
 from classes.mapObjects.Water import Water
 
+
 def displayBar():
     DISPLAY.blit(
         bottomBarImg,
@@ -43,46 +44,57 @@ def tick():
     displayBar()
     pygame.display.flip()
     pygame.display.update()
+
     
 
 if __name__ == '__main__': 
     pygame.init()
     font = pygame.font.SysFont(None, 25)
     world_map = Map(WIDTH, HEIGHT, TILE_SIZE)
-    agent = Agent(TILE_SIZE,world_map)
     trees = [Tree(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.tree_cells]
     rocks = [Rock(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.rock_cells]
     waters = [Water(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.water_cells]
     lilies = [Lily(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.lily_cells]
     ironOres = [IronOre(Vector2(x, y), TILE_SIZE, WIDTH, HEIGHT) for (x, y) in world_map.ironOre_cells]
     objects = trees + rocks + waters + lilies + ironOres
-    lilies = []
+    agent = Agent(TILE_SIZE,world_map)
     is_running = True
     paused = False
     ticks = 0
+    print(world_map.map_grid[0][0])
 
     while is_running:
-        if paused: continue
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_running = False
             elif event.type == KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
-                else:
+                elif not paused:
                     if event.key == pygame.K_w:
                         agent.move('W',world_map)
+                        rendLeft = agent.position.x - 15
+                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_s:
                         agent.move('S',world_map)
+                        rendLeft = agent.position.x - 15
+                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_a:
                         agent.move('A',world_map)
+                        rendLeft = agent.position.x - 15
+                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_d:
                         agent.move('D',world_map)
+                        rendLeft = agent.position.x - 15
+                        rendTop = agent.position.y - 10
                     elif event.key == pygame.K_q:
                         if world_map.map_grid[int(agent.facing.x)][int(agent.facing.y)] == Map.Cell.LilyCell:
                             objects.append(Water(agent.facing,TILE_SIZE,WIDTH,HEIGHT))
                         agent.destroy(objects)
-       
+
+        if paused: 
+            continue
         tick()
         ticks += 1
     pygame.quit()
