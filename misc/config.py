@@ -12,6 +12,16 @@ CHUNK_SIZE = 5
 SEALEVEL = 0 # (-5,5)
 RANDOMSEED = False
 
-DISPLAY = pygame.display.set_mode(((WIDTH+RIGHTBAR) * TILE_SIZE, (HEIGHT+BOTTOMBAR) * TILE_SIZE))
-CLOCK = pygame.time.Clock()
-pygame.display.set_caption('gierka')
+WALKINGSPEED1 = 1
+SWIMMINGSPEED1 = 0.5
+
+
+
+
+#keybindings
+PAUSE_BT = pygame.K_SPACE
+SHOWEQ_BT = pygame.K_q
+MOVEUP_BT = pygame.K_w
+MOVEDOWN_BT = pygame.K_s
+MOVELEFT_BT = pygame.K_a
+MOVERIGHT_BT = pygame.K_d

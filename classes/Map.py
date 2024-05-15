@@ -4,7 +4,7 @@ from enum import Enum
 import pygame
 from typing import List
 from pygame.math import Vector2
-from misc.images import grass_cell, rockFloor_cell
+from misc.images import *
 from misc.config import BAR, CHUNK_SIZE, SEALEVEL, HEIGHT, WIDTH, RANDOMSEED
 
 import noise
@@ -43,9 +43,9 @@ class MapGenerator:
         return world_map
 
 
-class Chunk:
+class Biome:
 
-    class ChunkTypes(Enum):
+    class BiomeTypes(Enum):
         Forrest = 'F'
         Lake = 'L'
         Mountains = 'M'
@@ -55,99 +55,155 @@ class Chunk:
         self.type = type
         self.map = world_map
         self.objects = []
-        '''
-        for x in range (topleftX, topleftX + CHUNK_SIZE):
-            if x >= 0 and x < world_map._width:
-                for y in range (topleftY, topleftY + CHUNK_SIZE):
-                    if y >= 0 and y < world_map._height:
-                        self.positions.append((x,y))
-                    else:
-                        break
-            else:
-                break
-        '''
         self._tile_size = tile_size
-        self.set_chunk()
+        self.set_biome()
 
 
-    def set_chunk(self):
+    def set_biome(self):
         match self.type:
-            case self.ChunkTypes.Forrest:
+            case self.BiomeTypes.Forrest:
                 self.generateForrest()
-            case self.ChunkTypes.Lake:
+            case self.BiomeTypes.Lake:
                 self.generateLake()
-            case self.ChunkTypes.Mountains:
+            case self.BiomeTypes.Mountains:
                 self.generateMountains()
 
     def generateForrest(self):
         for x, y in self.positions:
             randomizer = random.randint(0,10)
-            if randomizer in range (0,8):
-                self.map.map_grid[x][y] = Map.Cell.GrassCell
+            if randomizer == 0:
+                self.map.map_grid[x][y].type = Map.Item.ItemType.Tree
+                self.map.map_grid[x][y].under = Map.Item.ItemType.Grass
+                self.map.map_grid[x][y].under2 = Map.Item.ItemType.Dirt
             else:
-                self.map.map_grid[x][y] = Map.Cell.TreeCell
-                self.map.tree_cells.append((x,y))
+                self.map.map_grid[x][y].type = Map.Item.ItemType.Grass
+                self.map.map_grid[x][y].under = Map.Item.ItemType.Dirt
 
     def generateLake(self):
         for x, y in self.positions:
             randomizer = random.randint(0,10)
             if randomizer == 0:
-                self.map.map_grid[x][y] = Map.Cell.LilyCell
-                self.map.lily_cells.append((x,y))
+                self.map.map_grid[x][y].type = Map.Item.ItemType.Lily
+                self.map.map_grid[x][y].under = Map.Item.ItemType.Water
+                self.map.map_grid[x][y].under2 = Map.Item.ItemType.Dirt
             else:
-                self.map.map_grid[x][y] = Map.Cell.WaterCell
+                self.map.map_grid[x][y].type = Map.Item.ItemType.Water
+                self.map.map_grid[x][y].under = Map.Item.ItemType.Dirt
                 self.map.water_cells.append((x,y))
 
     def generateMountains(self):
         for x, y in self.positions:
             randomizer = random.randint(0,10)
             if randomizer == 0:
-                self.map.map_grid[x][y] = Map.Cell.IronOreCell
+                self.map.map_grid[x][y].type = Map.Item.ItemType.IronOre
+                self.map.map_grid[x][y].under = Map.Item.ItemType.RockFloor
                 self.map.ironOre_cells.append((x,y))
             else:
-                self.map.map_grid[x][y] = Map.Cell.RockCell
+                self.map.map_grid[x][y].type = Map.Item.ItemType.Rock
+                self.map.map_grid[x][y].under = Map.Item.ItemType.RockFloor
                 self.map.rock_cells.append((x,y))
+            self.map.map_grid[x][y].under2 = Map.Item.ItemType.RockHole
 
 
 
 
 class Map:
-    class Cell(Enum):
+    class Item:
+        def __init__(self):
+            self.type = self.ItemType.Grass
+            self.under = self.ItemType.Dirt
+            self.under2 = None
+            self.isfloor = False
 
-        GrassCell = "Grass"
-        RockFloorCell = "RockFloor"
-        WaterCell = "Lake"
 
-        TreeCell = "Tree"
-        RockCell = "Rock"
-        LilyCell = "Lily"
-        IronOreCell = "IronOre"
+        class ItemType(Enum):
+            Grass = "Grass"
+            RockFloor = "RockFloor"
+            Water = "Water"
+
+            Dirt = "Dirt"
+            RockHole = "RockHole"
+
+            Tree = "Tree"
+            Rock = "Rock"
+            Lily = "Lily"
+            IronOre = "IronOre"
+
+            Wood = "Wood"
+            Cobblestone = "Cobblestone"
+            IronOreShard = "IronOreShard"
+
+            Air = "Air"
+
     
-        def is_enterable(self):
-            enterable_cells = [self.GrassCell, self.LilyCell, self.RockFloorCell]
-            return self in enterable_cells
-    
-        def is_destroyable(self):
-            destroyable_cells = [self.TreeCell, self.RockCell, self.LilyCell, self.IronOreCell]
-            return self in destroyable_cells
-        def floor(self):
-            match self:
-                case self.TreeCell:
-                    return self.GrassCell
-                case self.LilyCell:
-                    return self.WaterCell
-                case self.RockCell:
-                    return self.RockFloorCell
-                case self.IronOreCell:
-                    return self.RockFloorCell
-                case _:
-                    return self.GrassCell
-                    
-    def imageForCell(self, cell: Cell):
-        if cell == self.Cell.RockFloorCell:
-            return rockFloor_cell
-        else:
+            def is_enterable(self):
+                enterable_cells = [self.Grass, self.Lily, self.RockFloor]
+                return self in enterable_cells
+            
+            def is_hole(self):
+                holes = [self.Dirt, self.RockHole]
+                return self in holes
+
+            def is_destroyable(self):
+                destroyable_items = [self.Tree, self.Rock, self.Lily, self.IronOre, self.Wood, self.Cobblestone, self.Grass, self.RockFloor]
+                return self in destroyable_items
+            
+            def is_swimmable(self):
+                return self == self.Water
+
+            def is_placable(self):
+                placable_items = [self.Wood, self.Cobblestone, self.Rock, self.Lily, self.RockFloor, self.Grass]
+                return self in placable_items
+
+            def floor(self):
+                match self:
+                    case self.Lily:
+                        return self.Water
+                    case self.RockFloor:
+                        return self.RockHole
+                    case self.Grass:
+                        return self.Dirt
+                    case _:
+                        return None
+
+            def product(self):
+                print(f"typ: {self}")
+                match self:
+                    case self.Tree:
+                        return self.Wood
+                    case self.Lily:
+                        return self.Lily
+                    case self.Rock:
+                        return self.Cobblestone
+                    case self.IronOre:
+                        return self.IronOreShard
+                    case _:
+                        return self
+                                
+    def imageForCell(self, cell: Item.ItemType):
+        if cell == self.Item.ItemType.Grass:
             return grass_cell
+        elif cell == self.Item.ItemType.RockFloor:
+            return rockFloor_cell
+        elif cell == self.Item.ItemType.Water:
+            return water_cell
+        elif cell == self.Item.ItemType.Tree:
+            return tree_cell
+        elif cell == self.Item.ItemType.Rock:
+            return rock_cell
+        elif cell == self.Item.ItemType.Lily:
+            return lily_cell
+        elif cell == self.Item.ItemType.IronOre:
+            return ironOre_cell
+        elif cell == self.Item.ItemType.Wood:
+            return wood_cell
+        elif cell == self.Item.ItemType.Cobblestone:
+            return cobblestone_cell
+        elif cell == self.Item.ItemType.Dirt:
+            return dirt_cell
+        elif cell == self.Item.ItemType.RockHole:
+            return rockhole_cell
+
     def __init__(self, width, height, tile_size):
         if RANDOMSEED:
             seed = random.randint(0,70)
@@ -155,7 +211,7 @@ class Map:
             seed = 20
         map_gen = MapGenerator(width, height, 100.0, 6, 0.5, 2.0, seed)
         self.world_map = map_gen.generate_map()
-        self.map_grid: List[List[self.Cell]] = None
+        self.map_grid: List[List[self.Item]] = None
         self._width = width
         self._height = height
         self._tile_size = tile_size
@@ -180,18 +236,31 @@ class Map:
         self.set_map()
 
     def set_map(self):
-        self.map_grid = [[self.Cell.GrassCell for _ in range(self._height)] for _ in range(self._width)]
-        las = Chunk(Chunk.ChunkTypes.Forrest,self.forrestPos,self._tile_size,self)
+        self.map_grid = [[self.Item() for _ in range(self._height)] for _ in range(self._width)]
+        las = Biome(Biome.BiomeTypes.Forrest,self.forrestPos,self._tile_size,self)
         self.chunks.append(las)
-        jezioro = Chunk(Chunk.ChunkTypes.Lake,self.lakePos,self._tile_size,self)
+        jezioro = Biome(Biome.BiomeTypes.Lake,self.lakePos,self._tile_size,self)
         self.chunks.append(jezioro)
-        gory = Chunk(Chunk.ChunkTypes.Mountains,self.mountainsPos,self._tile_size,self)
+        gory = Biome(Biome.BiomeTypes.Mountains,self.mountainsPos,self._tile_size,self)
         self.chunks.append(gory)
 
     def render(self, display, left, top):
-        for y in range(int(top)-2, int(top) + HEIGHT+2):
-            for x in range(int(left)-2, int(left) + WIDTH+2):
+        endTop = min (int(top) + HEIGHT+2, HEIGHT*10)
+        endLeft =  min (int(left) + WIDTH+2, WIDTH*10)
+        for y in range(int(top)-2, endTop):
+            for x in range(int(left)-2, endLeft):
                 display.blit(
-                    self.imageForCell(self.map_grid[x][y]),
+                    self.imageForCell(self.map_grid[x][y].type),
                     ((x - left) * self._tile_size, (y - top) * self._tile_size)
                 )
+                if self.map_grid[x][y].type not in [self.Item.ItemType.Water, self.Item.ItemType.Grass] and self.map_grid[x][y].under2 is None and self.map_grid[x][y].under is not None:
+                    display.blit(
+                        floorImg,
+                        ((x - left) * self._tile_size, (y - top) * self._tile_size)
+                    )
+                if self.map_grid[x][y].type not in [self.Item.ItemType.Rock, self.Item.ItemType.IronOre, self.Item.ItemType.Tree, self.Item.ItemType.Lily] and self.map_grid[x][y].under2 is not None:
+                    display.blit(
+                        wallImg,
+                        ((x - left) * self._tile_size, (y - top) * self._tile_size)
+                    )
+
