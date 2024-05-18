@@ -37,7 +37,7 @@ openDoor_cell = pygame.transform.scale(pygame.image.load("images/opendoor.png"),
 
 floorImg = pygame.transform.scale(pygame.image.load("images/floor.png"),  (size, size))
 wallImg = pygame.transform.scale(pygame.image.load("images/wall.png"),  (size, size))
-
+hoveredImg = pygame.transform.scale(pygame.image.load("images/hovered.png"),  (size, size))
 
 barImg = pygame.transform.scale(pygame.image.load("images/bar.png"), (size * BAR, size * HEIGHT))
 bottomBarImg = pygame.transform.scale(pygame.image.load("images/bottomBar.png"),(size * WIDTH, size * BOTTOMBAR))

@@ -112,6 +112,7 @@ class Map:
         def __init__(self):
             self.type = self.ItemType.Grass
             self.under = self.ItemType.Dirt
+            self.hovered = False
             self.under2 = None
             self.isfloor = False
 
@@ -276,6 +277,11 @@ class Map:
                 if self.map_grid[x][y].type.is_transparent():
                     display.blit(
                         self.imageForTransparentCell(self.map_grid[x][y].type),
+                        ((x - left) * self._tile_size, (y - top) * self._tile_size)
+                    )
+                if self.map_grid[x][y].hovered:
+                    display.blit(
+                        hoveredImg,
                         ((x - left) * self._tile_size, (y - top) * self._tile_size)
                     )
 

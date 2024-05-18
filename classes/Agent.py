@@ -101,7 +101,7 @@ class Agent:
 
     def destroy(self, x: int, y: int):
         distance = ((x - self.position.x)**2 + (y - self.position.y)**2)**(1/2)
-        if distance <= 3 and not self.isStandingOn(x,y):
+        if distance <= 4 and not self.isStandingOn(x,y):
             destroyingCell: Map.Item = self.map.map_grid[x][y]
             if destroyingCell.type.is_destroyable():
                 self.addToInventory(destroyingCell.type.product())
