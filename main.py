@@ -10,6 +10,7 @@ from classes.Agent import Agent
 import math
 import os
 import pygame.locals as pl
+import binascii
 
 # Kolory
 WHITE = (255, 255, 255)
@@ -298,7 +299,10 @@ def start_new_game():
     try:
         SEED = int(new_game_settings["SEED"])
     except ValueError:
-        SEED = 20
+        try:
+            SEED = binascii.crc32(new_game_settings["SEED"].encode())
+        except:
+            SEED = 20
     try:
         SEALEVEL = int(new_game_settings["SEALEVEL"])
     except ValueError:
@@ -350,12 +354,10 @@ if __name__ == '__main__':
     
     new_game_settings = {
         "MAP_SIZE": str(MAP_SIZE),
-        "RANDOMSEED": str(int(RANDOMSEED)),
+        "RANDOMSEED": "False",
         "SEED": str(SEED),
         "SEALEVEL": str(SEALEVEL)
     }
-    print(settings)
-    print(new_game_settings)
 
     settings_file = "settings.txt"
 
@@ -407,7 +409,6 @@ if __name__ == '__main__':
                                 apply_settings()
                     if in_newGame:
                         for key, rect in new_game_input_rects.items():
-                            print(new_game_settings)
                     
                             if rect.collidepoint(event.pos):
                                 active_input = key
