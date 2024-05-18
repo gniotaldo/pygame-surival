@@ -5,7 +5,7 @@ import pygame
 from typing import List
 from pygame.math import Vector2
 from misc.images import *
-from misc.config import BAR, CHUNK_SIZE, SEALEVEL, HEIGHT, WIDTH, RANDOMSEED
+from misc.config import BAR, SEALEVEL
 
 import noise
 import numpy as np
@@ -135,9 +135,14 @@ class Map:
 
             Air = "Air"
 
+            Doors = "Doors"
+            OpenDoors = "OpenDoors"
+            Furnace = "Furnace"
+            Glass = "Glass"
+
     
             def is_enterable(self):
-                enterable_cells = [self.Grass, self.Lily, self.RockFloor]
+                enterable_cells = [self.OpenDoors, self.Grass, self.Lily, self.RockFloor, self.OpenDoors]
                 return self in enterable_cells
             
             def is_hole(self):
@@ -145,15 +150,17 @@ class Map:
                 return self in holes
 
             def is_destroyable(self):
-                destroyable_items = [self.Tree, self.Rock, self.Lily, self.IronOre, self.Wood, self.Cobblestone, self.Grass, self.RockFloor]
+                destroyable_items = [self.Doors, self.Furnace, self.Glass, self.Tree, self.Rock, self.Lily, self.IronOre, self.Wood, self.Cobblestone, self.Grass, self.RockFloor]
                 return self in destroyable_items
             
             def is_swimmable(self):
                 return self == self.Water
 
             def is_placable(self):
-                placable_items = [self.Wood, self.Cobblestone, self.Rock, self.Lily, self.RockFloor, self.Grass]
+                placable_items = [self.Doors, self.Furnace, self.Glass, self.Wood, self.Cobblestone, self.Rock, self.Lily, self.RockFloor, self.Grass]
                 return self in placable_items
+            def is_transparent(self):
+                return self in [self.Doors, self.Glass, self.OpenDoors]
 
             def floor(self):
                 match self:
@@ -167,7 +174,6 @@ class Map:
                         return None
 
             def product(self):
-                print(f"typ: {self}")
                 match self:
                     case self.Tree:
                         return self.Wood
@@ -180,36 +186,49 @@ class Map:
                     case _:
                         return self
                                 
-    def imageForCell(self, cell: Item.ItemType):
-        if cell == self.Item.ItemType.Grass:
+    def imageForCell(self, cellType:Item.ItemType, cell: Item):
+        if cellType == self.Item.ItemType.Grass:
             return grass_cell
-        elif cell == self.Item.ItemType.RockFloor:
+        elif cellType == self.Item.ItemType.RockFloor:
             return rockFloor_cell
-        elif cell == self.Item.ItemType.Water:
+        elif cellType == self.Item.ItemType.Water:
             return water_cell
-        elif cell == self.Item.ItemType.Tree:
+        elif cellType == self.Item.ItemType.Tree:
             return tree_cell
-        elif cell == self.Item.ItemType.Rock:
+        elif cellType == self.Item.ItemType.Rock:
             return rock_cell
-        elif cell == self.Item.ItemType.Lily:
+        elif cellType == self.Item.ItemType.Lily:
             return lily_cell
-        elif cell == self.Item.ItemType.IronOre:
+        elif cellType == self.Item.ItemType.IronOre:
             return ironOre_cell
-        elif cell == self.Item.ItemType.Wood:
+        elif cellType == self.Item.ItemType.Wood:
             return wood_cell
-        elif cell == self.Item.ItemType.Cobblestone:
+        elif cellType == self.Item.ItemType.Cobblestone:
             return cobblestone_cell
-        elif cell == self.Item.ItemType.Dirt:
+        elif cellType == self.Item.ItemType.Dirt:
             return dirt_cell
-        elif cell == self.Item.ItemType.RockHole:
+        elif cellType == self.Item.ItemType.RockHole:
             return rockhole_cell
+        elif cellType == self.Item.ItemType.Furnace:
+            return furnace_cell
+        else:
+            return self.imageForCell(cell.under, cell)
+        
+    def imageForTransparentCell(self, cell: Item.ItemType):
+        if cell == self.Item.ItemType.Doors:
+            return door_cell
+        elif cell == self.Item.ItemType.OpenDoors:
+            return openDoor_cell
+        elif cell == self.Item.ItemType.Glass:
+            return glass_cell
 
-    def __init__(self, width, height, tile_size):
+    def __init__(self, width, height, tile_size, RANDOMSEED, SEED, MAP_SIZE, SEALEVEL):
         if RANDOMSEED:
             seed = random.randint(0,70)
         else:
-            seed = 20
+            seed = SEED
         map_gen = MapGenerator(width, height, 100.0, 6, 0.5, 2.0, seed)
+        self.MAP_SIZE = MAP_SIZE
         self.world_map = map_gen.generate_map()
         self.map_grid: List[List[self.Item]] = None
         self._width = width
@@ -245,20 +264,27 @@ class Map:
         self.chunks.append(gory)
 
     def render(self, display, left, top):
-        endTop = min (int(top) + HEIGHT+2, HEIGHT*10)
-        endLeft =  min (int(left) + WIDTH+2, WIDTH*10)
+        global HEIGHT, WIDTH
+        endTop = min (int(top) + HEIGHT+2, 20*self.MAP_SIZE)
+        endLeft =  min (int(left) + WIDTH+2, 20*self.MAP_SIZE)
         for y in range(int(top)-2, endTop):
             for x in range(int(left)-2, endLeft):
                 display.blit(
-                    self.imageForCell(self.map_grid[x][y].type),
+                    self.imageForCell(self.map_grid[x][y].type, self.map_grid[x][y]),
                     ((x - left) * self._tile_size, (y - top) * self._tile_size)
                 )
+                if self.map_grid[x][y].type.is_transparent():
+                    display.blit(
+                        self.imageForTransparentCell(self.map_grid[x][y].type),
+                        ((x - left) * self._tile_size, (y - top) * self._tile_size)
+                    )
+
                 if self.map_grid[x][y].type not in [self.Item.ItemType.Water, self.Item.ItemType.Grass] and self.map_grid[x][y].under2 is None and self.map_grid[x][y].under is not None:
                     display.blit(
                         floorImg,
                         ((x - left) * self._tile_size, (y - top) * self._tile_size)
                     )
-                if self.map_grid[x][y].type not in [self.Item.ItemType.Rock, self.Item.ItemType.IronOre, self.Item.ItemType.Tree, self.Item.ItemType.Lily] and self.map_grid[x][y].under2 is not None:
+                if self.map_grid[x][y].type not in [self.Item.ItemType.Doors, self.Item.ItemType.OpenDoors, self.Item.ItemType.Rock, self.Item.ItemType.IronOre, self.Item.ItemType.Tree, self.Item.ItemType.Lily] and self.map_grid[x][y].under2 is not None:
                     display.blit(
                         wallImg,
                         ((x - left) * self._tile_size, (y - top) * self._tile_size)

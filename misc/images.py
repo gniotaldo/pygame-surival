@@ -30,6 +30,11 @@ cobblestone_cell =pygame.transform.scale(pygame.image.load("images/cobblestone.p
 wood_cell = pygame.transform.scale(pygame.image.load("images/wood.png"),  (size, size))
 dirt_cell = pygame.transform.scale(pygame.image.load("images/dirt.png"),  (size, size))
 rockhole_cell = pygame.transform.scale(pygame.image.load("images/rockhole.png"),  (size, size))
+door_cell = pygame.transform.scale(pygame.image.load("images/door.png"),  (size, size))
+furnace_cell = pygame.transform.scale(pygame.image.load("images/furnace.png"),  (size, size))
+glass_cell = pygame.transform.scale(pygame.image.load("images/glass.png"),  (size, size))
+openDoor_cell = pygame.transform.scale(pygame.image.load("images/opendoor.png"),  (size, size))
+
 floorImg = pygame.transform.scale(pygame.image.load("images/floor.png"),  (size, size))
 wallImg = pygame.transform.scale(pygame.image.load("images/wall.png"),  (size, size))
 
